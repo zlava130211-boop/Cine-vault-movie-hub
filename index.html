@@ -193,12 +193,7 @@
                     <div>
                         <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Genre *</label>
                         <select id="input-genre" required class="w-full bg-obsidian-950 border border-white/10 focus:border-amber-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none">
-                            <option value="Sci-Fi">Sci-Fi</option>
-                            <option value="Animation">Animation</option>
-                            <option value="Action">Action</option>
-                            <option value="Fantasy">Fantasy</option>
-                            <option value="Documentary">Documentary</option>
-                            <option value="Drama">Drama</option>
+                        
                         </select>
                     </div>
 
@@ -435,86 +430,13 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, addDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // -------------------------------------------------------------------------
-        // 1. DEFAULT OPEN-SOURCE CINEMA CATALOG (Blender Foundation & Public Domain)
-        // -------------------------------------------------------------------------
-        const DEFAULT_MOVIES = [
-            {
-                id: 'default-1',
-                title: 'Tears of Steel',
-                description: 'In a dystopian future Amsterdam, a group of warriors and scientists gather at the Oude Kerk to stage a desperate stand against destructive robots.',
-                genre: 'Sci-Fi',
-                year: 2012,
-                quality: '4K UHD',
-                size: '1.85 GB',
-                videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
-                posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Tears_of_Steel_poster.jpg/800px-Tears_of_Steel_poster.jpg',
-                accentColor: '#dc2626',
-                createdAt: 1700000005,
-                isDefault: true
-            },
-            {
-                id: 'default-2',
-                title: 'Sintel',
-                description: 'A lonely young woman named Sintel embarks on a perilous quest across frozen mountains and scorching deserts to rescue a baby dragon she befriended.',
-                genre: 'Fantasy',
-                year: 2010,
-                quality: '1080p HD',
-                size: '1.24 GB',
-                videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
-                posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Sintel_poster.jpg/800px-Sintel_poster.jpg',
-                accentColor: '#f59e0b',
-                createdAt: 1700000004,
-                isDefault: true
-            },
-            {
-                id: 'default-3',
-                title: 'Big Buck Bunny',
-                description: 'A giant, gentle rabbit tries to enjoy a peaceful spring morning in the forest until three mischievous rodents push his patience past the breaking point.',
-                genre: 'Animation',
-                year: 2008,
-                quality: '1080p HD',
-                size: '920 MB',
-                videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-                posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Big_buck_bunny_poster_big.jpg/800px-Big_buck_bunny_poster_big.jpg',
-                accentColor: '#10b981',
-                createdAt: 1700000003,
-                isDefault: true
-            },
-            {
-                id: 'default-4',
-                title: 'Elephants Dream',
-                description: 'Two strange companions, Proog and Emo, navigate an endless, surreal mechanical colossus where machines come alive with their own unpredictable logic.',
-                genre: 'Sci-Fi',
-                year: 2006,
-                quality: '1080p HD',
-                size: '780 MB',
-                videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-                posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Elephants_Dream_poster.jpg/800px-Elephants_Dream_poster.jpg',
-                accentColor: '#6366f1',
-                createdAt: 1700000002,
-                isDefault: true
-            },
-            {
-                id: 'default-5',
-                title: 'For Bigger Blazes',
-                description: 'High-octane visual showcase featuring dramatic pyrotechnics, dynamic camera sweeps, and crisp high-definition mastering for home theater testing.',
-                genre: 'Action',
-                year: 2018,
-                quality: '1080p HD',
-                size: '410 MB',
-                videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-                posterUrl: '',
-                accentColor: '#ea580c',
-                createdAt: 1700000001,
-                isDefault: true
-            }
-        ];
+        
+                
 
         // -------------------------------------------------------------------------
         // 2. APPLICATION STATE
         // -------------------------------------------------------------------------
-        const OWNER_PIN = 'admin123';
+        const OWNER_formattedSizeAKV';
         let state = {
             isOwner: false,
             movies: [...DEFAULT_MOVIES],
