@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineVault — Exclusive Movie & Video Download Hub</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        obsidian: {
+                            950: '#07080b',
+                            900: '#0d0f14',
+                            800: '#151922',
+                            700: '#1f2533',
+                        },
+                        crimson: {
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                        },
+                        amber: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #07080b;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+
+        /* Custom subtle scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d0f14;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2533;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+
+        /* Hide scrollbar for horizontal pill lists */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Ambient cinema glow */
+        .hero-glow {
+            background: radial-gradient(circle at 50% 0%, rgba(220, 38, 38, 0.16) 0%, rgba(245, 158, 11, 0.06) 35%, rgba(7, 8, 11, 0) 70%);
+        }
+
+        .card-hover {
+            transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 0 20px rgba(239, 68, 68, 0.15);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-crimson-600 selection:text-white">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-40 bg-obsidian-950/85 backdrop-blur-xl border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between py-3.5 gap-3">
+                
+                <!-- Brand Logo & Owner Status -->
+                <div class="flex items-center justify-between">
+                    <a href="#" onclick="resetFilters(); return false;" class="flex items-center gap-2.5 group">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-crimson-600 to-amber-500 flex items-center justify-center shadow-lg shadow-crimson-600/25 group-hover:scale-105 transition-transform">
+                            <i data-lucide="film" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <div>
+                            <span class="font-display font-extrabold text-xl tracking-tight text-white">Cine<span class="text-crimson-500">Vault</span></span>
+                            <span class="block text-[10px] uppercase tracking-widest text-gray-400 font-medium -mt-1">Direct Cinema Hub</span>
+                        </div>
+                    </a>
+
+                    <!-- Mobile Admin Button -->
+                    <div class="flex md:hidden items-center gap-2">
+                        <button id="mobile-admin-btn" onclick="handleAdminButtonClick()" class="px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all bg-obsidian-800 hover:bg-obsidian-700 text-gray-200 border border-white/10">
+                            <i data-lucide="shield" class="w-3.5 h-3.5 text-amber-400"></i>
+                            <span id="mobile-admin-btn-text">Owner Login</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="flex-1 max-w-xl mx-0 md:mx-6">
+                    <div class="relative group">
+                        <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 group-focus-within:text-crimson-500 transition-colors"></i>
+                        <input 
+                            type="text" 
+                            id="search-input" 
+                            oninput="handleSearch(this.value)"
+                            placeholder="Search movies, genres, quality (e.g. 4K, Sci-Fi)..." 
+                            class="w-full bg-obsidian-900/90 border border-white/10 focus:border-crimson-500/60 focus:ring-2 focus:ring-crimson-500/20 rounded-xl pl-10 pr-9 py-2.5 text-sm text-white placeholder-gray-500 outline-none transition-all"
+                        >
+                        <button id="clear-search-btn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Desktop Admin Button & Status Badge -->
+                <div class="hidden md:flex items-center gap-3">
+                    <div id="owner-badge" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        Owner Mode Active
+                    </div>
+                    <button id="desktop-admin-btn" onclick="handleAdminButtonClick()" class="px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all bg-obsidian-800 hover:bg-obsidian-700 text-white border border-white/10 shadow-sm">
+                        <i data-lucide="lock" id="admin-btn-icon" class="w-4 h-4 text-amber-400"></i>
+                        <span id="desktop-admin-btn-text">Owner Login</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Genre Filter Pills -->
+            <div class="flex items-center gap-2 py-2.5 overflow-x-auto no-scrollbar border-t border-white/5" id="genre-pills-container">
+                <!-- Populated dynamically via JS -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 hero-glow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+            <!-- OWNER ADMIN UPLOAD PANEL (Hidden unless logged in as Owner) -->
+            <section id="admin-panel" class="hidden mb-10 bg-obsidian-900/95 border border-amber-500/30 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 mb-6 border-b border-white/10">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-amber-500/15 text-amber-400 text-xs font-bold uppercase tracking-wider mb-2">
+                            <i data-lucide="crown" class="w-3.5 h-3.5"></i> Owner Control Studio
+                        </div>
+                        <h2 class="font-display text-2xl font-bold text-white">Upload New Movie or Video</h2>
+                        <p class="text-sm text-gray-400 mt-0.5">Publish videos via direct URL or select a local video file for instant visitor preview and download.</p>
+                    </div>
+                    <button onclick="logoutOwner()" class="self-start sm:self-center px-4 py-2 rounded-xl bg-obsidian-800 hover:bg-crimson-600/20 text-gray-300 hover:text-crimson-400 border border-white/10 hover:border-crimson-500/40 text-xs font-semibold flex items-center gap-2 transition-all">
+                        <i data-lucide="log-out" class="w-4 h-4"></i> Lock & Exit Admin
+                    </button>
+                </div>
+
+                <form id="upload-form" onsubmit="handleMovieUpload(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <!-- Title -->
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Movie / Video Title *</label>
+                        <input type="text" id="input-title" required placeholder="e.g., Interstellar Odyssey" class="w-full bg-obsidian-950 border border-white/10 focus:border-amber-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none">
+                    </div>
+
+                    <!-- Genre -->
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Genre *</label>
+                        <select id="input-genre" required class="w-full bg-obsidian-950 border border-white/10 focus:border-amber-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none">
+                            <option value="Sci-Fi">Sci-Fi</option>
+                            <option value="Animation">Animation</option>
+                            <option value="Action">Action</option>
+                            <option value="Fantasy">Fantasy</option>
+                            <option value="Documentary">Documentary</option>
+                            <option value="Drama">Drama</option>
+                        </select>
+                    </div>
+
+                    <!-- Release Year & Quality -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Year *</label>
+                            <input type="number" id="input-year" required min="1900" max="2030" value="2026" class="w-full bg-obsidian-950 border border-white/10 focus:border-amber-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Quality *</label>
+                            <select id="input-quality" required class="w-full bg-obsidian-950 border border-white/10 focus:border-amber-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none">
+                                <option value="4K UHD">4K UHD</option>
+                                <option value="1080p HD" selected>1080p HD</option>
+                                <option value="720p HD">720p HD</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Video Source Mode Tabs -->
+                    <div class="md:col-span-2 lg:col-span-2 bg-obsidian-950/80 border border-white/10 rounded-xl p-4">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-gray-300">Video Source (Direct URL or Local File) *</label>
+                            <div class="flex rounded-lg bg-obsidian-900 p-1 border border-white/10">
+                                <button type="button" id="tab-url" onclick="switchVideoSourceTab('url')" class="px-3 py-1 rounded-md text-xs font-semibold bg-amber-500 text-obsidian-950 transition-all">Direct Video URL</button>
+                                <button type="button" id="tab-file" onclick="switchVideoSourceTab('file')" class="px-3 py-1 rounded-md text-xs font-semibold text-gray-400 hover:text-white transition-all">Local Video File</button>
+                            </div>
+                        </div>
+
+                        <!-- URL Input -->
+                        <div id="source-url-wrapper">
+                            <input type="url" id="input-video-url" placeholder="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" class="w-full bg-obsidian-900 border border-white/10 focus:border-amber-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none">
+                            <p class="text-[11px] text-gray-500 mt-1.5">Paste a direct .mp4 / .webm video link. Direct URLs persist across reloads.</p>
+                        </div>
+
+                        <!-- Local File Input -->
+                        <div id="source-file-wrapper" class="hidden">
+                            <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-white/15 hover:border-amber-500/60 rounded-xl cursor-pointer bg-obsidian-900/60 hover:bg-obsidian-900 transition-all">
+                                <div class="flex flex-col items-center justify-center pt-2 pb-2 px-4 text-center">
+                                    <i data-lucide="upload-cloud" class="w-6 h-6 text-amber-400 mb-1"></i>
+                                    <p id="selected-file-label" class="text-xs text-gray-300 font-medium">Click to choose MP4, WebM, or MKV from your device</p>
+                                </div>
+                                <input id="input-video-file" type="file" accept="video/*" class="hidden" onchange="handleLocalFileSelect(this)" />
+                            </label>
+                            <p class="text-[11px] text-amber-400/80 mt-1.5">Instant browser blob streaming & download enabled for this session (auto-calculates file size).</p>
+                        </div>
+                    </div>
+
+                    <!-- File Size & Poster URL -->
+                    <div class="flex flex-col justify-between gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">File Size *</label>
+                            <input type="text" id="input-size" required placeholder="e.g., 1.4 GB" value="850 MB" class="w-full bg-obsidian-950 border border-white/10 focus:border-amber-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Poster Thumbnail URL (Optional)</label>
+                            <input type="url" id="input-poster" placeholder="https://... (Leave blank for auto-artwork)" class="w-full bg-obsidian-950 border border-white/10 focus:border-amber-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="md:col-span-2 lg:col-span-3">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Synopsis / Description *</label>
+                        <textarea id="input-description" rows="2" required placeholder="Write a compelling short summary of the movie or video..." class="w-full bg-obsidian-950 border border-white/10 focus:border-amber-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none"></textarea>
+                    </div>
+
+                    <!-- Submit Row -->
+                    <div class="md:col-span-2 lg:col-span-3 flex flex-wrap items-center justify-between gap-4 pt-2">
+                        <span class="text-xs text-gray-400 flex items-center gap-1.5">
+                            <i data-lucide="info" class="w-4 h-4 text-amber-400"></i>
+                            Visitors can immediately stream previews and download published titles.
+                        </span>
+                        <button type="submit" class="px-6 py-3 rounded-xl bg-gradient-to-r from-crimson-600 to-amber-500 hover:from-crimson-500 hover:to-amber-400 text-white font-bold text-sm shadow-lg shadow-crimson-600/25 flex items-center gap-2 transition-all active:scale-95">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                            Publish to CineVault
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Hero Spotlight Banner (Featured Movie) -->
+            <section id="featured-banner" class="mb-10 rounded-3xl overflow-hidden bg-obsidian-900 border border-white/10 relative shadow-2xl">
+                <!-- Populated dynamically with top featured movie -->
+            </section>
+
+            <!-- Section Header & Sort Controls -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h2 id="catalog-heading" class="font-display text-2xl font-bold text-white flex items-center gap-2.5">
+                        Available Downloads
+                        <span id="movie-count-badge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white/10 text-gray-300">0</span>
+                    </h2>
+                    <p class="text-sm text-gray-400 mt-0.5">High-bitrate open cinema releases ready for instant preview and direct download.</p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <label for="sort-select" class="text-xs text-gray-400 font-medium">Sort by:</label>
+                    <select id="sort-select" onchange="handleSort(this.value)" class="bg-obsidian-900 border border-white/10 rounded-xl px-3.5 py-2 text-xs font-semibold text-gray-200 outline-none focus:border-crimson-500">
+                        <option value="newest">Newest Added</option>
+                        <option value="year-desc">Release Year (Newest)</option>
+                        <option value="title-asc">Title (A–Z)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Movie Grid -->
+            <div id="movies-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Movie Cards Rendered Here -->
+            </div>
+
+            <!-- Empty State (Shown when search/filter has 0 matches) -->
+            <div id="empty-state" class="hidden text-center py-20 px-4 bg-obsidian-900/50 rounded-3xl border border-white/5">
+                <div class="w-16 h-16 rounded-2xl bg-obsidian-800 flex items-center justify-center mx-auto mb-4 text-gray-400">
+                    <i data-lucide="film" class="w-8 h-8"></i>
+                </div>
+                <h3 class="font-display text-xl font-bold text-white mb-1">No matching movies found</h3>
+                <p class="text-sm text-gray-400 max-w-md mx-auto mb-6">Try adjusting your search keywords or switching back to all genres.</p>
+                <button onclick="resetFilters()" class="px-5 py-2.5 rounded-xl bg-crimson-600 hover:bg-crimson-500 text-white text-sm font-semibold transition-all">
+                    Reset Filters
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 bg-obsidian-950 py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+            <div class="flex items-center gap-2">
+                <span class="font-display font-bold text-sm text-gray-300">Cine<span class="text-crimson-500">Vault</span></span>
+                <span>•</span>
+                <span>Curated Open Cinema & Direct Video Distribution</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span>All sample films courtesy of Blender Open Movie Projects</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- OWNER LOGIN MODAL -->
+    <div id="login-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="bg-obsidian-900 border border-white/15 rounded-2xl max-w-md w-full p-6 sm:p-7 shadow-2xl relative animate-fade-in">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-4">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
+            </div>
+
+            <h3 class="font-display text-xl font-bold text-white">Owner Studio Access</h3>
+            <p class="text-sm text-gray-400 mt-1">Only the website owner can upload new videos or remove existing titles.</p>
+
+            <!-- Subtle Demo PIN Hint -->
+            <div class="mt-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between text-xs">
+                <span class="text-amber-300/90 font-medium">Owner Demo Passcode:</span>
+                <code class="px-2 py-0.5 rounded bg-obsidian-950 text-amber-400 font-mono font-bold select-all">admin123</code>
+            </div>
+
+            <form onsubmit="submitOwnerLogin(event)" class="mt-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Enter Owner PIN / Password</label>
+                    <input 
+                        type="password" 
+                        id="owner-password-input" 
+                        required 
+                        placeholder="••••••••" 
+                        class="w-full bg-obsidian-950 border border-white/15 focus:border-amber-500 rounded-xl px-4 py-3 text-sm text-white outline-none transition-all"
+                    >
+                    <p id="login-error-msg" class="hidden text-xs text-crimson-500 mt-1.5 font-medium">Incorrect passcode. Try "admin123".</p>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeLoginModal()" class="px-4 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-crimson-600 hover:from-amber-400 hover:to-crimson-500 text-white font-bold text-sm shadow-lg shadow-crimson-600/20 transition-all">
+                        Unlock Admin Panel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- VIDEO PREVIEW & DOWNLOAD MODAL -->
+    <div id="player-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-lg">
+        <div class="bg-obsidian-900 border border-white/15 rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-obsidian-950/60">
+                <div class="flex items-center gap-3 min-w-0">
+                    <span id="modal-quality-badge" class="px-2.5 py-0.5 rounded-md bg-crimson-600 text-white text-[11px] font-bold uppercase tracking-wider shrink-0">1080p HD</span>
+                    <h3 id="modal-movie-title" class="font-display font-bold text-lg text-white truncate">Movie Title</h3>
+                </div>
+                <button onclick="closePlayerModal()" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-colors shrink-0">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Video Player Container -->
+            <div class="relative bg-black aspect-video w-full flex items-center justify-center overflow-hidden">
+                <video id="modal-video-player" controls playsinline class="w-full h-full object-contain outline-none">
+                    Your browser does not support HTML5 video playback.
+                </video>
+            </div>
+
+            <!-- Modal Details & Prominent Download Footer -->
+            <div class="p-5 sm:p-6 overflow-y-auto flex flex-col sm:flex-row sm:items-center justify-between gap-5 bg-obsidian-900">
+                <div class="space-y-1.5 max-w-xl">
+                    <div class="flex flex-wrap items-center gap-2 text-xs text-gray-400 font-medium">
+                        <span id="modal-movie-year" class="text-gray-200">2024</span>
+                        <span>•</span>
+                        <span id="modal-movie-genre" class="text-amber-400">Sci-Fi</span>
+                        <span>•</span>
+                        <span id="modal-movie-size" class="px-2 py-0.5 rounded bg-white/5 text-gray-300">1.2 GB</span>
+                    </div>
+                    <p id="modal-movie-desc" class="text-sm text-gray-300 leading-relaxed">
+                        Movie description goes here.
+                    </p>
+                </div>
+
+                <div class="shrink-0 flex flex-col sm:items-end gap-2">
+                    <button id="modal-download-btn" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-crimson-600 to-crimson-500 hover:from-crimson-500 hover:to-amber-500 text-white font-bold text-sm shadow-lg shadow-crimson-600/30 flex items-center justify-center gap-2.5 transition-all active:scale-95">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>Download Video</span>
+                    </button>
+                    <span class="text-[11px] text-gray-500 text-center sm:text-right">Direct high-speed MP4 download</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- APPLICATION LOGIC & FIREBASE / STATE MANAGEMENT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, addDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // -------------------------------------------------------------------------
+        // 1. DEFAULT OPEN-SOURCE CINEMA CATALOG (Blender Foundation & Public Domain)
+        // -------------------------------------------------------------------------
+        const DEFAULT_MOVIES = [
+            {
+                id: 'default-1',
+                title: 'Tears of Steel',
+                description: 'In a dystopian future Amsterdam, a group of warriors and scientists gather at the Oude Kerk to stage a desperate stand against destructive robots.',
+                genre: 'Sci-Fi',
+                year: 2012,
+                quality: '4K UHD',
+                size: '1.85 GB',
+                videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+                posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Tears_of_Steel_poster.jpg/800px-Tears_of_Steel_poster.jpg',
+                accentColor: '#dc2626',
+                createdAt: 1700000005,
+                isDefault: true
+            },
+            {
+                id: 'default-2',
+                title: 'Sintel',
+                description: 'A lonely young woman named Sintel embarks on a perilous quest across frozen mountains and scorching deserts to rescue a baby dragon she befriended.',
+                genre: 'Fantasy',
+                year: 2010,
+                quality: '1080p HD',
+                size: '1.24 GB',
+                videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
+                posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Sintel_poster.jpg/800px-Sintel_poster.jpg',
+                accentColor: '#f59e0b',
+                createdAt: 1700000004,
+                isDefault: true
+            },
+            {
+                id: 'default-3',
+                title: 'Big Buck Bunny',
+                description: 'A giant, gentle rabbit tries to enjoy a peaceful spring morning in the forest until three mischievous rodents push his patience past the breaking point.',
+                genre: 'Animation',
+                year: 2008,
+                quality: '1080p HD',
+                size: '920 MB',
+                videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+                posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Big_buck_bunny_poster_big.jpg/800px-Big_buck_bunny_poster_big.jpg',
+                accentColor: '#10b981',
+                createdAt: 1700000003,
+                isDefault: true
+            },
+            {
+                id: 'default-4',
+                title: 'Elephants Dream',
+                description: 'Two strange companions, Proog and Emo, navigate an endless, surreal mechanical colossus where machines come alive with their own unpredictable logic.',
+                genre: 'Sci-Fi',
+                year: 2006,
+                quality: '1080p HD',
+                size: '780 MB',
+                videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+                posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Elephants_Dream_poster.jpg/800px-Elephants_Dream_poster.jpg',
+                accentColor: '#6366f1',
+                createdAt: 1700000002,
+                isDefault: true
+            },
+            {
+                id: 'default-5',
+                title: 'For Bigger Blazes',
+                description: 'High-octane visual showcase featuring dramatic pyrotechnics, dynamic camera sweeps, and crisp high-definition mastering for home theater testing.',
+                genre: 'Action',
+                year: 2018,
+                quality: '1080p HD',
+                size: '410 MB',
+                videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+                posterUrl: '',
+                accentColor: '#ea580c',
+                createdAt: 1700000001,
+                isDefault: true
+            }
+        ];
+
+        // -------------------------------------------------------------------------
+        // 2. APPLICATION STATE
+        // -------------------------------------------------------------------------
+        const OWNER_PIN = 'admin123';
+        let state = {
+            isOwner: false,
+            movies: [...DEFAULT_MOVIES],
+            cloudMovies: [],
+            sessionLocalMovies: [], // For local blob files uploaded during active session
+            hiddenDefaultIds: new Set(),
+            selectedGenre: 'All',
+            searchQuery: '',
+            sortBy: 'newest',
+            videoSourceMode: 'url',
+            selectedLocalFile: null,
+            firebaseReady: false,
+            user: null
+        };
+
+        let db = null;
+        let auth = null;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'cinevault-hub';
+
+        // -------------------------------------------------------------------------
+        // 3. INITIALIZE FIREBASE PERSISTENCE (WITH CLEAN FALLBACK)
+        // -------------------------------------------------------------------------
+        async function initPersistence() {
+            try {
+                if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                    const firebaseConfig = JSON.parse(__firebase_config);
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+
+                    onAuthStateChanged(auth, (user) => {
+                        state.user = user;
+                        if (user) {
+                            state.firebaseReady = true;
+                            subscribeToCloudMovies();
+                        }
+                    });
+                }
+            } catch (err) {
+                console.warn('Running in standalone in-memory mode:', err.message);
+            }
+        }
+
+        function subscribeToCloudMovies() {
+            if (!db || !state.user) return;
+            const moviesCol = collection(db, 'artifacts', appId, 'public', 'data', 'movies');
+            
+            onSnapshot(moviesCol, (snapshot) => {
+                const fetched = [];
+                snapshot.forEach((docSnap) => {
+                    fetched.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                state.cloudMovies = fetched;
+                recomputeMoviesList();
+            }, (error) => {
+                console.error('Firestore sync error:', error);
+            });
+        }
+
+        function recomputeMoviesList() {
+            const visibleDefaults = DEFAULT_MOVIES.filter(m => !state.hiddenDefaultIds.has(m.id));
+            state.movies = [
+                ...state.sessionLocalMovies,
+                ...state.cloudMovies,
+                ...visibleDefaults
+            ];
+            renderAll();
+        }
+
+        // -------------------------------------------------------------------------
+        // 4. SVG POSTER FALLBACK GENERATOR
+        // -------------------------------------------------------------------------
+        function generatePosterDataURI(title, genre, year, accent = '#dc2626') {
+            const safeTitle = (title || 'Untitled').replace(/[<>&'"]/g, '');
+            const safeGenre = (genre || 'Cinema').toUpperCase();
+            const svg = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="600" height="850" viewBox="0 0 600 850">
+                    <defs>
+                        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#151922"/>
+                            <stop offset="55%" stop-color="#0d0f14"/>
+                            <stop offset="100%" stop-color="${accent}" stop-opacity="0.45"/>
+                        </linearGradient>
+                        <radialGradient id="glow" cx="50%" cy="35%" r="50%">
+                            <stop offset="0%" stop-color="${accent}" stop-opacity="0.35"/>
+                            <stop offset="100%" stop-color="#07080b" stop-opacity="0"/>
+                        </radialGradient>
+                    </defs>
+                    <rect width="600" height="850" fill="url(#bg)"/>
+                    <rect width="600" height="850" fill="url(#glow)"/>
+                    <circle cx="300" cy="310" r="110" fill="none" stroke="${accent}" stroke-width="2" stroke-opacity="0.4"/>
+                    <polygon points="280,275 340,310 280,345" fill="#ffffff" fill-opacity="0.85"/>
+                    <text x="50%" y="520" text-anchor="middle" fill="#fbbf24" font-family="sans-serif" font-size="18" font-weight="700" letter-spacing="4">${safeGenre} • ${year}</text>
+                    <text x="50%" y="575" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="36" font-weight="800">${safeTitle.slice(0, 22)}</text>
+                    <text x="50%" y="780" text-anchor="middle" fill="#9ca3af" font-family="sans-serif" font-size="14" letter-spacing="3">CINEVAULT EXCLUSIVE</text>
+                </svg>
+            `;
+            return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+        }
+
+        // -------------------------------------------------------------------------
+        // 5. OWNER AUTHENTICATION & ADMIN PANEL CONTROLS
+        // -------------------------------------------------------------------------
+        window.handleAdminButtonClick = function() {
+            if (state.isOwner) {
+                const panel = document.getElementById('admin-panel');
+                panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                document.getElementById('login-modal').classList.remove('hidden');
+                document.getElementById('login-error-msg').classList.add('hidden');
+                const input = document.getElementById('owner-password-input');
+                input.value = '';
+                setTimeout(() => input.focus(), 50);
+            }
+        };
+
+        window.closeLoginModal = function() {
+            document.getElementById('login-modal').classList.add('hidden');
+        };
+
+        window.submitOwnerLogin = function(e) {
+            e.preventDefault();
+            const pass = document.getElementById('owner-password-input').value.trim();
+            if (pass === OWNER_PIN) {
+                state.isOwner = true;
+                closeLoginModal();
+                updateOwnerUI();
+                renderMoviesGrid();
+                showToast('Welcome back, Owner! Admin upload studio unlocked.', 'success');
+            } else {
+                document.getElementById('login-error-msg').classList.remove('hidden');
+            }
+        };
+
+        window.logoutOwner = function() {
+            state.isOwner = false;
+            updateOwnerUI();
+            renderMoviesGrid();
+            showToast('Owner session locked.', 'info');
+        };
+
+        function updateOwnerUI() {
+            const adminPanel = document.getElementById('admin-panel');
+            const ownerBadge = document.getElementById('owner-badge');
+            const desktopBtnText = document.getElementById('desktop-admin-btn-text');
+            const mobileBtnText = document.getElementById('mobile-admin-btn-text');
+
+            if (state.isOwner) {
+                adminPanel.classList.remove('hidden');
+                ownerBadge.classList.remove('hidden');
+                ownerBadge.classList.add('flex');
+                desktopBtnText.textContent = 'Admin Studio';
+                mobileBtnText.textContent = 'Admin Studio';
+            } else {
+                adminPanel.classList.add('hidden');
+                ownerBadge.classList.add('hidden');
+                ownerBadge.classList.remove('flex');
+                desktopBtnText.textContent = 'Owner Login';
+                mobileBtnText.textContent = 'Owner Login';
+            }
+            lucide.createIcons();
+        }
+
+        // -------------------------------------------------------------------------
+        // 6. UPLOAD & DELETE HANDLERS (OWNER ONLY)
+        // -------------------------------------------------------------------------
+        window.switchVideoSourceTab = function(mode) {
+            state.videoSourceMode = mode;
+            const tabUrl = document.getElementById('tab-url');
+            const tabFile = document.getElementById('tab-file');
+            const urlWrap = document.getElementById('source-url-wrapper');
+            const fileWrap = document.getElementById('source-file-wrapper');
+
+            if (mode === 'url') {
+                tabUrl.className = 'px-3 py-1 rounded-md text-xs font-semibold bg-amber-500 text-obsidian-950 transition-all';
+                tabFile.className = 'px-3 py-1 rounded-md text-xs font-semibold text-gray-400 hover:text-white transition-all';
+                urlWrap.classList.remove('hidden');
+                fileWrap.classList.add('hidden');
+            } else {
+                tabFile.className = 'px-3 py-1 rounded-md text-xs font-semibold bg-amber-500 text-obsidian-950 transition-all';
+                tabUrl.className = 'px-3 py-1 rounded-md text-xs font-semibold text-gray-400 hover:text-white transition-all';
+                fileWrap.classList.remove('hidden');
+                urlWrap.classList.add('hidden');
+            }
+        };
+
+        window.handleLocalFileSelect = function(input) {
+            const file = input.files && input.files[0];
+            if (!file) return;
+            state.selectedLocalFile = file;
+            document.getElementById('selected-file-label').textContent = `Selected: ${file.name}`;
+            
+            // Auto-fill file size
+            const mb = file.size / (1024 * 1024);
+            const formattedSize = mb >= 1024 ? `${(mb / 1024).toFixed(2)} GB` : `${Math.max(1, Math.round(mb))} MB`;
+            document.getElementById('input-size').value = formattedSize;
+
+            // Auto-fill title if empty
+            const titleInput = document.getElementById('input-title');
+            if (!titleInput.value.trim()) {
+                const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[_.-]+/g, ' ');
+                titleInput.value = cleanName.replace(/\b\w/g, l => l.toUpperCase());
+            }
+        };
+
+        window.handleMovieUpload = async function(e) {
+            e.preventDefault();
+            if (!state.isOwner) {
+                showToast('Unauthorized: Owner access required.', 'error');
+                return;
+            }
+
+            const title = document.getElementById('input-title').value.trim();
+            const genre = document.getElementById('input-genre').value;
+            const year = parseInt(document.getElementById('input-year').value, 10) || 2026;
+            const quality = document.getElementById('input-quality').value;
+            const size = document.getElementById('input-size').value.trim() || '1.0 GB';
+            const posterUrl = document.getElementById('input-poster').value.trim();
+            const description = document.getElementById('input-description').value.trim();
+
+            let finalVideoUrl = '';
+            let isBlob = false;
+
+            if (state.videoSourceMode === 'url') {
+                finalVideoUrl = document.getElementById('input-video-url').value.trim();
+                if (!finalVideoUrl) {
+                    showToast('Please enter a valid direct video URL.', 'error');
+                    return;
+                }
+            } else {
+                if (!state.selectedLocalFile) {
+                    showToast('Please select a video file from your device.', 'error');
+                    return;
+                }
+                finalVideoUrl = URL.createObjectURL(state.selectedLocalFile);
+                isBlob = true;
+            }
+
+            const newMovieData = {
+                title,
+                genre,
+                year,
+                quality,
+                size,
+                videoUrl: finalVideoUrl,
+                posterUrl,
+                description,
+                accentColor: '#ef4444',
+                createdAt: Date.now()
+            };
+
+            if (isBlob || !state.firebaseReady || !db || !state.user) {
+                // Store in session memory (blob URLs are browser-session bound)
+                state.sessionLocalMovies.unshift({
+                    id: 'local-' + Date.now(),
+                    ...newMovieData,
+                    isBlob
+                });
+                recomputeMoviesList();
+                showToast(`"${title}" published to CineVault!`, 'success');
+            } else {
+                // Persist URL-based entry to Firestore
+                try {
+                    const moviesCol = collection(db, 'artifacts', appId, 'public', 'data', 'movies');
+                    await addDoc(moviesCol, newMovieData);
+                    showToast(`"${title}" published and saved to cloud catalog!`, 'success');
+                } catch (err) {
+                    console.error('Error saving movie:', err);
+                    state.sessionLocalMovies.unshift({ id: 'mem-' + Date.now(), ...newMovieData });
+                    recomputeMoviesList();
+                    showToast(`"${title}" published to catalog!`, 'success');
+                }
+            }
+
+            // Reset form
+            document.getElementById('upload-form').reset();
+            state.selectedLocalFile = null;
+            document.getElementById('selected-file-label').textContent = 'Click to choose MP4, WebM, or MKV from your device';
+            switchVideoSourceTab('url');
+        };
+
+        window.deleteMovie = async function(movieId) {
+            if (!state.isOwner) return;
+
+            if (movieId.startsWith('default-')) {
+                state.hiddenDefaultIds.add(movieId);
+                recomputeMoviesList();
+                showToast('Movie removed from catalog.', 'info');
+                return;
+            }
+
+            if (movieId.startsWith('local-') || movieId.startsWith('mem-')) {
+                state.sessionLocalMovies = state.sessionLocalMovies.filter(m => m.id !== movieId);
+                recomputeMoviesList();
+                showToast('Uploaded video removed.', 'info');
+                return;
+            }
+
+            // Delete from Firestore
+            if (state.firebaseReady && db && state.user) {
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'movies', movieId);
+                    await deleteDoc(docRef);
+                    showToast('Movie permanently deleted from cloud.', 'info');
+                } catch (err) {
+                    console.error('Delete error:', err);
+                    showToast('Could not delete item.', 'error');
+                }
+            }
+        };
+
+        // -------------------------------------------------------------------------
+        // 7. DIRECT DOWNLOAD & VIDEO PLAYER MODAL
+        // -------------------------------------------------------------------------
+        window.triggerDownload = function(movieId) {
+            const movie = state.movies.find(m => m.id === movieId);
+            if (!movie) return;
+
+            const filename = `${movie.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${movie.quality.replace(/\s+/g, '')}.mp4`;
+            showToast(`Preparing download: ${movie.title} (${movie.size})...`, 'success');
+
+            // Create invisible anchor to initiate direct file download
+            const link = document.createElement('a');
+            link.href = movie.videoUrl;
+            link.setAttribute('download', filename);
+            link.setAttribute('target', '_blank');
+            link.setAttribute('rel', 'noopener noreferrer');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        window.openPlayerModal = function(movieId) {
+            const movie = state.movies.find(m => m.id === movieId);
+            if (!movie) return;
+
+            document.getElementById('modal-quality-badge').textContent = movie.quality;
+            document.getElementById('modal-movie-title').textContent = movie.title;
+            document.getElementById('modal-movie-year').textContent = movie.year;
+            document.getElementById('modal-movie-genre').textContent = movie.genre;
+            document.getElementById('modal-movie-size').textContent = movie.size;
+            document.getElementById('modal-movie-desc').textContent = movie.description;
+
+            const dlBtn = document.getElementById('modal-download-btn');
+            dlBtn.onclick = () => triggerDownload(movie.id);
+
+            const videoEl = document.getElementById('modal-video-player');
+            videoEl.src = movie.videoUrl;
+            videoEl.poster = movie.posterUrl || generatePosterDataURI(movie.title, movie.genre, movie.year, movie.accentColor);
+
+            document.getElementById('player-modal').classList.remove('hidden');
+            videoEl.play().catch(() => { /* Autoplay might wait for click */ });
+        };
+
+        window.closePlayerModal = function() {
+            const videoEl = document.getElementById('modal-video-player');
+            videoEl.pause();
+            videoEl.removeAttribute('src');
+            videoEl.load();
+            document.getElementById('player-modal').classList.add('hidden');
+        };
+
+        // -------------------------------------------------------------------------
+        // 8. FILTERING, SEARCH & SORTING
+        // -------------------------------------------------------------------------
+        window.selectGenre = function(genre) {
+            state.selectedGenre = genre;
+            renderGenrePills();
+            renderMoviesGrid();
+        };
+
+        window.handleSearch = function(query) {
+            state.searchQuery = query.trim().toLowerCase();
+            const clearBtn = document.getElementById('clear-search-btn');
+            if (state.searchQuery.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+            renderMoviesGrid();
+        };
+
+        window.clearSearch = function() {
+            const input = document.getElementById('search-input');
+            input.value = '';
+            handleSearch('');
+        };
+
+        window.handleSort = function(sortVal) {
+            state.sortBy = sortVal;
+            renderMoviesGrid();
+        };
+
+        window.resetFilters = function() {
+            state.selectedGenre = 'All';
+            clearSearch();
+            renderGenrePills();
+            renderMoviesGrid();
+        };
+
+        function getFilteredMovies() {
+            let list = [...state.movies];
+
+            if (state.selectedGenre !== 'All') {
+                list = list.filter(m => m.genre.toLowerCase() === state.selectedGenre.toLowerCase());
+            }
+
+            if (state.searchQuery) {
+                list = list.filter(m => 
+                    m.title.toLowerCase().includes(state.searchQuery) ||
+                    m.genre.toLowerCase().includes(state.searchQuery) ||
+                    m.quality.toLowerCase().includes(state.searchQuery) ||
+                    m.description.toLowerCase().includes(state.searchQuery) ||
+                    String(m.year).includes(state.searchQuery)
+                );
+            }
+
+            if (state.sortBy === 'newest') {
+                list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            } else if (state.sortBy === 'year-desc') {
+                list.sort((a, b) => b.year - a.year);
+            } else if (state.sortBy === 'title-asc') {
+                list.sort((a, b) => a.title.localeCompare(b.title));
+            }
+
+            return list;
+        }
+
+        // -------------------------------------------------------------------------
+        // 9. UI RENDERING FUNCTIONS
+        // -------------------------------------------------------------------------
+        function renderGenrePills() {
+            const genres = ['All', 'Sci-Fi', 'Fantasy', 'Animation', 'Action', 'Documentary', 'Drama'];
+            const container = document.getElementById('genre-pills-container');
+
+            container.innerHTML = genres.map(genre => {
+                const isActive = state.selectedGenre === genre;
+                const activeClasses = 'bg-crimson-600 text-white border-crimson-500 shadow-md shadow-crimson-600/20';
+                const inactiveClasses = 'bg-obsidian-900 text-gray-400 hover:text-white hover:bg-obsidian-800 border-white/10';
+                return `
+                    <button 
+                        onclick="selectGenre('${genre}')" 
+                        class="px-4 py-1.5 rounded-full text-xs font-semibold border whitespace-nowrap transition-all ${isActive ? activeClasses : inactiveClasses}"
+                    >
+                        ${genre}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function renderFeaturedBanner() {
+            const banner = document.getElementById('featured-banner');
+            const featured = state.movies[0];
+            if (!featured) {
+                banner.classList.add('hidden');
+                return;
+            }
+            banner.classList.remove('hidden');
+
+            const fallbackPoster = generatePosterDataURI(featured.title, featured.genre, featured.year, featured.accentColor);
+            const posterSrc = featured.posterUrl || fallbackPoster;
+
+            banner.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-12 items-center">
+                    <div class="lg:col-span-7 p-6 sm:p-10 lg:p-12 space-y-4 z-10">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Featured Release
+                            </span>
+                            <span class="px-2.5 py-1 rounded-md bg-white/10 text-gray-200 text-xs font-semibold">${featured.quality}</span>
+                            <span class="px-2.5 py-1 rounded-md bg-white/5 text-gray-400 text-xs font-medium">${featured.size}</span>
+                        </div>
+
+                        <h1 class="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                            ${escapeHTML(featured.title)}
+                        </h1>
+
+                        <div class="flex items-center gap-3 text-xs sm:text-sm text-gray-400 font-medium">
+                            <span class="text-white font-semibold">${featured.year}</span>
+                            <span>•</span>
+                            <span class="text-crimson-400 font-semibold">${escapeHTML(featured.genre)}</span>
+                            <span>•</span>
+                            <span>Direct MP4 Download</span>
+                        </div>
+
+                        <p class="text-sm sm:text-base text-gray-300 max-w-2xl leading-relaxed line-clamp-3">
+                            ${escapeHTML(featured.description)}
+                        </p>
+
+                        <div class="flex flex-wrap items-center gap-3 pt-2">
+                            <button onclick="triggerDownload('${featured.id}')" class="px-6 py-3.5 rounded-xl bg-gradient-to-r from-crimson-600 to-crimson-500 hover:from-crimson-500 hover:to-amber-500 text-white font-bold text-sm shadow-lg shadow-crimson-600/30 flex items-center gap-2.5 transition-all active:scale-95">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                                Download Now (${featured.size})
+                            </button>
+                            <button onclick="openPlayerModal('${featured.id}')" class="px-5 py-3.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-sm border border-white/10 flex items-center gap-2 transition-all">
+                                <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+                                Watch Preview
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-5 relative h-64 sm:h-80 lg:h-full min-h-[320px] overflow-hidden bg-obsidian-950">
+                        <img 
+                            src="${posterSrc}" 
+                            onerror="this.onerror=null; this.src='${fallbackPoster}';" 
+                            alt="${escapeHTML(featured.title)}" 
+                            class="w-full h-full object-cover object-center opacity-85"
+                        >
+                        <div class="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-obsidian-900 via-obsidian-900/40 to-transparent"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderMoviesGrid() {
+            const grid = document.getElementById('movies-grid');
+            const emptyState = document.getElementById('empty-state');
+            const countBadge = document.getElementById('movie-count-badge');
+            const filtered = getFilteredMovies();
+
+            countBadge.textContent = filtered.length;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                lucide.createIcons();
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            grid.innerHTML = filtered.map(movie => {
+                const fallbackPoster = generatePosterDataURI(movie.title, movie.genre, movie.year, movie.accentColor);
+                const posterSrc = movie.posterUrl || fallbackPoster;
+
+                const ownerDeleteBtn = state.isOwner ? `
+                    <button 
+                        onclick="deleteMovie('${movie.id}')" 
+                        title="Delete from CineVault"
+                        class="absolute top-3 right-3 z-20 p-2 rounded-xl bg-obsidian-950/90 hover:bg-crimson-600 text-crimson-400 hover:text-white border border-crimson-500/40 shadow-lg transition-all"
+                    >
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                ` : '';
+
+                return `
+                    <article class="bg-obsidian-900 border border-white/10 rounded-2xl overflow-hidden flex flex-col card-hover group relative">
+                        ${ownerDeleteBtn}
+                        
+                        <!-- Poster Thumbnail Container -->
+                        <div class="relative aspect-[16/10] bg-obsidian-950 overflow-hidden cursor-pointer" onclick="openPlayerModal('${movie.id}')">
+                            <img 
+                                src="${posterSrc}" 
+                                onerror="this.onerror=null; this.src='${fallbackPoster}';" 
+                                alt="${escapeHTML(movie.title)}" 
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            >
+                            <div class="absolute inset-0 bg-gradient-to-t from-obsidian-900 via-black/20 to-transparent opacity-90"></div>
+
+                            <!-- Top Left Badges -->
+                            <div class="absolute top-3 left-3 flex items-center gap-1.5">
+                                <span class="px-2.5 py-1 rounded-lg bg-obsidian-950/85 backdrop-blur-md border border-white/10 text-amber-400 text-[11px] font-bold tracking-wide">
+                                    ${escapeHTML(movie.quality)}
+                                </span>
+                                <span class="px-2.5 py-1 rounded-lg bg-obsidian-950/85 backdrop-blur-md border border-white/10 text-gray-200 text-[11px] font-semibold">
+                                    ${escapeHTML(movie.size)}
+                                </span>
+                            </div>
+
+                            <!-- Center Play Overlay -->
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                <div class="w-12 h-12 rounded-full bg-crimson-600/95 text-white flex items-center justify-center shadow-xl shadow-crimson-600/40 scale-90 group-hover:scale-100 transition-transform">
+                                    <i data-lucide="play" class="w-5 h-5 fill-current ml-0.5"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Content -->
+                        <div class="p-5 flex-1 flex flex-col justify-between gap-4">
+                            <div>
+                                <div class="flex items-center justify-between gap-2 text-xs text-gray-400 font-medium mb-1.5">
+                                    <span class="text-crimson-400 font-semibold">${escapeHTML(movie.genre)}</span>
+                                    <span>${movie.year}</span>
+                                </div>
+                                <h3 class="font-display font-bold text-lg text-white group-hover:text-amber-400 transition-colors line-clamp-1">
+                                    ${escapeHTML(movie.title)}
+                                </h3>
+                                <p class="text-xs text-gray-400 mt-1.5 line-clamp-2 leading-relaxed">
+                                    ${escapeHTML(movie.description)}
+                                </p>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="grid grid-cols-2 gap-2.5 pt-2 border-t border-white/5">
+                                <button 
+                                    onclick="openPlayerModal('${movie.id}')" 
+                                    class="px-3 py-2.5 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 text-gray-200 hover:text-white text-xs font-semibold border border-white/10 flex items-center justify-center gap-1.5 transition-all"
+                                >
+                                    <i data-lucide="eye" class="w-3.5 h-3.5 text-amber-400"></i>
+                                    Preview
+                                </button>
+                                <button 
+                                    onclick="triggerDownload('${movie.id}')" 
+                                    class="px-3 py-2.5 rounded-xl bg-crimson-600 hover:bg-crimson-500 text-white text-xs font-bold shadow-md shadow-crimson-600/20 flex items-center justify-center gap-1.5 transition-all active:scale-95"
+                                >
+                                    <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                    Download
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        function renderAll() {
+            renderGenrePills();
+            renderFeaturedBanner();
+            renderMoviesGrid();
+            lucide.createIcons();
+        }
+
+        // -------------------------------------------------------------------------
+        // 10. UTILITIES & TOAST NOTIFICATIONS
+        // -------------------------------------------------------------------------
+        function escapeHTML(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const colors = {
+                success: 'bg-obsidian-900 border-emerald-500/40 text-emerald-300',
+                error: 'bg-obsidian-900 border-crimson-500/50 text-crimson-300',
+                info: 'bg-obsidian-900 border-amber-500/40 text-amber-200'
+            };
+
+            const icons = {
+                success: 'check-circle-2',
+                error: 'alert-circle',
+                info: 'info'
+            };
+
+            toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border shadow-2xl backdrop-blur-xl text-xs font-semibold transition-all duration-300 ${colors[type] || colors.info}`;
+            toast.innerHTML = `
+                <i data-lucide="${icons[type] || 'info'}" class="w-4 h-4 shrink-0"></i>
+                <span class="flex-1">${escapeHTML(message)}</span>
+            `;
+
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(8px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        };
+
+        // Close modals on Escape key
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeLoginModal();
+                closePlayerModal();
+            }
+        });
+
+        // Boot application
+        window.addEventListener('DOMContentLoaded', () => {
+            renderAll();
+            initPersistence();
+        });
+    </script>
+</body>
+</html>
